@@ -1,129 +1,96 @@
 //
-//  ProjectView.swift
+//  Looper.swift
 //  Looper
 //
 //  Created by Max Lee on 2025-08-23.
 //
+
 import SwiftUI
 import AVFoundation
 
-struct AudioTrackView: View {
-    @State private var isRecording = false
-    @State private var rotation = 0.0
-    @State private var scale = 1.0
-    @State private var playing = false
-    @State private var audioRecorder: AVAudioRecorder?
-    @State private var recordingSessoion: AVAudioSession = AVAudioSession.sharedInstance()
-    @State private var recordingURL: URL?
-    @State private var audioPlayer: AVAudioPlayer?
+struct ProjectView: View {
+    @State private var tracks: [Int] = [1]
+    @State private var recordingSession: AVAudioSession = AVAudioSession.sharedInstance()
+    @State private var isAlertPresented: Bool = false
+    @State private var recordedFiles: [URL] = []
     
     var body: some View {
-        VStack {
-            Button(action: {
-                if playing {
-                    //TODO
-                } else if isRecording {
-                    stopRecording()
-                } else {
-                    startRecording()
-                }
-            }) {
-                Image("idle")
-                    .resizable()
-                    .scaledToFit()
-                    .frame(width: 200, height: 200)
-                    .opacity(1.0)
-                    .rotationEffect(.degrees(isRecording ? rotation : 0))
-                    .scaleEffect(scale)
-            }
-        }
-        .onChange(of: isRecording) {
-            if isRecording {
-                withAnimation(Animation.linear(duration: 2).repeatForever(autoreverses: false)) {
-                    rotation = 360
-                }
-                scale = 1.0
-            } else {
-                withAnimation(.easeInOut(duration: 0.2)) {
-                    rotation = 0
-                }
-                withAnimation(Animation.easeInOut(duration: 0.2).repeatForever(autoreverses: true)) {
-                    scale = 1.1
+        VStack{
+            ScrollView{
+                VStack(spacing: 20){
+                    ForEach(tracks, id: \.self) {trackID in
+                        AudioTrackView(trackID: trackID, recordingSession: recordingSession)
+                    }
+                    .padding()
                 }
             }
+            
+            HStack{
+                Button(action:{
+                    addTrack()
+                }){
+                    Text("Add Track")
+                        .padding()
+                        .background(Color.blue)
+                        .foregroundColor(Color.white)
+                        .cornerRadius(10)
+                }
+                
+                Button(action:{
+                    isAlertPresented = true
+                }) {
+                    Text("Clear All")
+                        .padding()
+                        .background(Color.red)
+                        .foregroundColor(.white)
+                        .cornerRadius(10)
+                }.alert("Are you sure you want to remove all tracks?", isPresented: $isAlertPresented, actions:{
+                    Button("Cancel", role: .cancel) {
+                        isAlertPresented = false
+                    }
+                    
+                    Button("OK"){
+                        clearAll()
+                        isAlertPresented = false
+                    }
+                })
+            }
+            .padding()
         }
-        .onAppear{
-            setupAudioSession()
+        .task{
+            await setupAudioSession()
         }
+        
     }
     
-    func setupAudioSession() {
+    func addTrack(){
+        let newTrackID = (tracks.max() ?? 0) + 1
+        tracks.append(newTrackID)
+    }
+    
+    func clearAll(){
+        
+        tracks.removeAll()
+    }
+    
+    func setupAudioSession() async {
         do {
-            try recordingSessoion.setCategory(.playAndRecord, mode: .default, options: [.defaultToSpeaker])
-            try recordingSessoion.setActive(true)
+            try recordingSession.setCategory(.playAndRecord, mode: .default, options: [.defaultToSpeaker])
+            try recordingSession.setActive(true)
             
-            recordingSessoion.requestRecordPermission { allowed in
+            recordingSession.requestRecordPermission { allowed in
                 DispatchQueue.main.async {
                     if !allowed {
                         print("Microphone permission denied")
                     }
                 }
             }
-            
-
         } catch {
             print("Failed to set up audio session: \(error.localizedDescription)")
-        }
-    }
-    
-    func startRecording() {
-        let audioFileName = getDocumentsDirectory().appendingPathComponent("recording_\(Date().timeIntervalSince1970).m4a")
-        recordingURL = audioFileName
-        
-        let settings: [String: Any] = [
-            AVFormatIDKey: Int(kAudioFormatMPEG4AAC),
-            AVSampleRateKey: 12000,
-            AVNumberOfChannelsKey: 1,
-            AVEncoderAudioQualityKey: Int(AVAudioQuality.high.rawValue)
-        ]
-        
-        do {
-            audioRecorder = try AVAudioRecorder(url: audioFileName, settings: settings)
-            audioRecorder?.record()
-            isRecording = true
-        } catch {
-            print("Fail to start recording: \(error.localizedDescription)")
-            isRecording = false
-        }
-    }
-    
-    func stopRecording() {
-        audioRecorder?.stop()
-        audioRecorder = nil
-        isRecording = false
-        playing = true
-        
-        if let url = recordingURL {
-            playAudio(from: url)
-        }
-    }
-    
-    func getDocumentsDirectory() -> URL {
-        FileManager.default.urls(for: .documentDirectory, in: .userDomainMask)[0]
-    }
-    
-    func playAudio(from url: URL){
-        do{
-            audioPlayer = try AVAudioPlayer(contentsOf: url)
-            audioPlayer?.numberOfLoops = -1
-            audioPlayer?.prepareToPlay()
-            audioPlayer?.play()
-        } catch{
-            print("Fail to play audio: \(error.localizedDescription)")
         }
     }
 }
 
 #Preview {
-    AudioTrackView()
+    ProjectView()
 }

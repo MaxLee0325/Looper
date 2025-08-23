@@ -15,7 +15,7 @@ struct ContentView: View {
                     .imageScale(.large)
                     .foregroundStyle(.tint)
                 Text("Hello, world!")
-                NavigationLink("Go to Page 2", destination: AudioTrackView())
+                NavigationLink("Go to Page 2", destination: ProjectView())
             }
             .padding()
             .navigationTitle(Text("Home"))
