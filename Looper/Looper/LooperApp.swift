@@ -6,6 +6,7 @@
 //
 
 import SwiftUI
+import SwiftData
 
 @main
 struct LooperApp: App {
@@ -13,5 +14,6 @@ struct LooperApp: App {
         WindowGroup {
             ContentView()
         }
+        .modelContainer(for: Project.self)
     }
 }

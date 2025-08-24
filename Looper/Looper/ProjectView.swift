@@ -7,12 +7,16 @@
 
 import SwiftUI
 import AVFoundation
+import SwiftData
 
 struct ProjectView: View {
+    @Environment(\.modelContext) private var modelContext
+    @Query private var projects: [Project]
+    
     @State private var tracks: [Int] = [1]
     @State private var recordingSession: AVAudioSession = AVAudioSession.sharedInstance()
     @State private var isAlertPresented: Bool = false
-    @State private var recordedFiles: [URL] = []
+    @Bindable var project: Project
     
     var body: some View {
         VStack{
@@ -69,7 +73,6 @@ struct ProjectView: View {
     }
     
     func clearAll(){
-        
         tracks.removeAll()
     }
     
@@ -89,8 +92,18 @@ struct ProjectView: View {
             print("Failed to set up audio session: \(error.localizedDescription)")
         }
     }
+    
+    func getDocumentsDirectory() -> URL {
+        FileManager.default.urls(for: .documentDirectory, in: .userDomainMask)[0]
+    }
 }
 
 #Preview {
-    ProjectView()
+    // Create a mock project for preview
+    let config = ModelConfiguration(isStoredInMemoryOnly: true)
+    let container = try! ModelContainer(for: Project.self, configurations: config)
+    let project = Project(name: "Preview Project", id: UUID())
+    return ProjectView(project: project)
+        .modelContainer(container)
 }
+

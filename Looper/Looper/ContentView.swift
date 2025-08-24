@@ -6,19 +6,59 @@
 //
 
 import SwiftUI
+import SwiftData
 
 struct ContentView: View {
+    @Environment(\.modelContext) private var modelContext
+    @Query private var projects: [Project]
+    @State private var projectName = ""
+    @State private var isAlertPresented: Bool = false
+    @State private var createdProject: Project?
+
     var body: some View {
-        NavigationStack{
-            VStack {
-                Image(systemName: "globe")
-                    .imageScale(.large)
-                    .foregroundStyle(.tint)
-                Text("Hello, world!")
-                NavigationLink("Go to Page 2", destination: ProjectView())
+        NavigationStack {
+            List {
+                ForEach(projects) { project in
+                    NavigationLink(value: project){
+                        Text(project.name)
+                    }
+                }
             }
-            .padding()
-            .navigationTitle(Text("Home"))
+            .navigationTitle("Home")
+            .toolbar {
+                ToolbarItem(placement: .bottomBar){
+                    Button(action: {
+                        isAlertPresented = true
+                    }) {
+                        Text("Create a New Project")
+                            .padding()
+                            .background(Color.green)
+                            .foregroundColor(.white)
+                            .cornerRadius(10)
+                    }
+                }
+            }
+            .alert("Please enter a name:", isPresented: $isAlertPresented, actions: {
+                TextField("Project Name", text: $projectName)
+                Button("Cancel", role: .cancel) {
+                    isAlertPresented = false
+                    projectName = ""
+                }
+                Button("Create") {
+                    let newProject = Project(name: projectName, id: UUID())
+                    modelContext.insert(newProject)
+                    try? modelContext.save()
+                    createdProject = newProject
+                    isAlertPresented = false
+                    projectName = ""
+                }
+            })
+            .navigationDestination(item: $createdProject) { project in
+                ProjectView(project: project)
+            }
+            .navigationDestination(for: Project.self) { project in
+                ProjectView(project: project)
+            }
         }
     }
 }
