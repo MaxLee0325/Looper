@@ -15,7 +15,7 @@ struct AudioTrackView: View {
     @State private var audioRecorder: AVAudioRecorder?
     @State private var recordingURL: URL?
     @State private var audioPlayer: AVAudioPlayer?
-    let trackID: Int
+    let trackID: UUID
     let recordingSession: AVAudioSession
     
     var body: some View {
@@ -104,5 +104,5 @@ struct AudioTrackView: View {
 }
 
 #Preview {
-    AudioTrackView(trackID: 1, recordingSession: AVAudioSession.sharedInstance())
+    AudioTrackView(trackID: UUID(), recordingSession: AVAudioSession.sharedInstance())
 }

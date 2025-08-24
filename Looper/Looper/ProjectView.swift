@@ -12,24 +12,25 @@ import SwiftData
 struct ProjectView: View {
     @Environment(\.modelContext) private var modelContext
     @Query private var projects: [Project]
-    
-    @State private var tracks: [Int] = [1]
     @State private var recordingSession: AVAudioSession = AVAudioSession.sharedInstance()
     @State private var isAlertPresented: Bool = false
     @Bindable var project: Project
     
     var body: some View {
         VStack{
+            Text("Project: \(project.name)")
+
             ScrollView{
                 VStack(spacing: 20){
-                    ForEach(tracks, id: \.self) {trackID in
-                        AudioTrackView(trackID: trackID, recordingSession: recordingSession)
+                    ForEach(project.tracks) {track in
+                        AudioTrackView(trackID: track.id, recordingSession: recordingSession)
                     }
                     .padding()
                 }
             }
             
             HStack{
+                
                 Button(action:{
                     addTrack()
                 }){
@@ -68,12 +69,14 @@ struct ProjectView: View {
     }
     
     func addTrack(){
-        let newTrackID = (tracks.max() ?? 0) + 1
-        tracks.append(newTrackID)
+        let url = getDocumentsDirectory().appendingPathComponent("recording_\(Date().timeIntervalSince1970).m4a")
+        let newTrack = Track(id: UUID(), url: url)
+        
+        project.tracks.append(newTrack)
     }
     
     func clearAll(){
-        tracks.removeAll()
+        //tracks.removeAll()
     }
     
     func setupAudioSession() async {

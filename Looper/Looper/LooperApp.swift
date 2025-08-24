@@ -14,6 +14,6 @@ struct LooperApp: App {
         WindowGroup {
             ContentView()
         }
-        .modelContainer(for: Project.self)
+        .modelContainer(for: [Project.self, Track.self])
     }
 }

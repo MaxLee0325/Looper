@@ -9,15 +9,14 @@ import Foundation
 import SwiftData
 
 @Model
-class Recording: Identifiable {
-    var id: UUID
-    var projectId: UUID
+class Track: Identifiable {
+    @Attribute(.unique) var id: UUID
     var createdAt: Date?
     var updatedAt: Date?
-    var url: URL?
+    var url: URL
     
-    init(id: UUID, projectID: UUID) {
+    init(id: UUID, url: URL) {
         self.id = id
-        self.projectId = projectID
+        self.url = url
     }
 }
