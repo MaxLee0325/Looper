@@ -23,7 +23,7 @@ struct ProjectView: View {
             ScrollView{
                 VStack(spacing: 20){
                     ForEach(project.tracks) {track in
-                        AudioTrackView(trackID: track.id, recordingSession: recordingSession)
+                        AudioTrackView(track: track, recordingSession: recordingSession)
                     }
                     .padding()
                 }
@@ -70,7 +70,7 @@ struct ProjectView: View {
     
     func addTrack(){
         let url = getDocumentsDirectory().appendingPathComponent("recording_\(Date().timeIntervalSince1970).m4a")
-        let newTrack = Track(id: UUID(), url: url)
+        let newTrack = Track(id: UUID())
         
         project.tracks.append(newTrack)
     }

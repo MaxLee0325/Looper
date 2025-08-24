@@ -6,8 +6,10 @@
 //
 import SwiftUI
 import AVFoundation
+import SwiftData
 
 struct AudioTrackView: View {
+    @Bindable var track: Track
     @State private var isRecording = false
     @State private var rotation = 0.0
     @State private var scale = 1.0
@@ -15,7 +17,6 @@ struct AudioTrackView: View {
     @State private var audioRecorder: AVAudioRecorder?
     @State private var recordingURL: URL?
     @State private var audioPlayer: AVAudioPlayer?
-    let trackID: UUID
     let recordingSession: AVAudioSession
     
     var body: some View {
@@ -53,6 +54,11 @@ struct AudioTrackView: View {
                 }
             }
         }
+        .onAppear(){
+            if let url = track.url {
+                playAudio(from: url)
+            }
+        }
     }
     
     func startRecording() {
@@ -70,6 +76,7 @@ struct AudioTrackView: View {
             audioRecorder = try AVAudioRecorder(url: audioFileName, settings: settings)
             audioRecorder?.record()
             isRecording = true
+            track.setURL(url: audioFileName)
         } catch {
             print("Fail to start recording: \(error.localizedDescription)")
             isRecording = false
@@ -104,5 +111,17 @@ struct AudioTrackView: View {
 }
 
 #Preview {
-    AudioTrackView(trackID: UUID(), recordingSession: AVAudioSession.sharedInstance())
+    let config = ModelConfiguration(isStoredInMemoryOnly: true)
+    let container = try! ModelContainer(for: Project.self, Track.self, configurations: config)
+
+    let project = Project(name: "Preview Project", id: UUID())
+    let track = Track(id: UUID())
+    project.tracks.append(track)
+
+    return AudioTrackView(
+        track: track,
+        recordingSession: AVAudioSession.sharedInstance()
+    )
+    .modelContainer(container)
 }
+
