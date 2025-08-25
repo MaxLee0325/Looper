@@ -14,12 +14,34 @@ struct ProjectView: View {
     @Query private var projects: [Project]
     @State private var recordingSession: AVAudioSession = AVAudioSession.sharedInstance()
     @State private var isAlertPresented: Bool = false
+    @State private var crud: CRUD?
     @Bindable var project: Project
     
     var body: some View {
         VStack{
-            Text("Project: \(project.name)")
-
+            Text(project.name)
+                .font(.title2)
+                .fontWeight(.semibold)
+                .foregroundColor(.primary)
+                .padding(.top, 16)
+                .padding(.horizontal, 20)
+                .lineLimit(1)
+                .truncationMode(.tail)
+            
+            if(project.tracks.count == 0){
+                Button(action: {
+                    addTrack()
+                }) {
+                    Image(systemName: "plus.rectangle.portrait")
+                        .font(.system(size: 200, weight: .bold))
+                        .foregroundStyle(.primary)                 
+                        .shadow(radius: 8)
+                        .foregroundColor(.gray.opacity(0.8))
+                        .transition(.scale.combined(with: .opacity))
+                        .padding(100)
+                }
+            }
+            
             ScrollView{
                 VStack(spacing: 20){
                     ForEach(project.tracks) {track in
@@ -55,8 +77,10 @@ struct ProjectView: View {
                     }
                     
                     Button("OK"){
-                        clearAll()
-                        isAlertPresented = false
+                        Task{
+                            await clearAll()
+                            isAlertPresented = false
+                        }
                     }
                 })
             }
@@ -64,6 +88,9 @@ struct ProjectView: View {
         }
         .task{
             await setupAudioSession()
+        }
+        .onAppear(){
+            crud = CRUD(modelContext: modelContext)
         }
         
     }
@@ -75,8 +102,12 @@ struct ProjectView: View {
         project.tracks.append(newTrack)
     }
     
-    func clearAll(){
-        //tracks.removeAll()
+    func clearAll() async{
+        do{
+            try await crud?.removeAllTracksFromProject(project)
+        } catch {
+            print(error.localizedDescription)
+        }
     }
     
     func setupAudioSession() async {

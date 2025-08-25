@@ -14,6 +14,7 @@ struct ContentView: View {
     @State private var projectName = ""
     @State private var isAlertPresented: Bool = false
     @State private var createdProject: Project?
+    @State private var crud: CRUD?
 
     var body: some View {
         NavigationStack {
@@ -21,6 +22,17 @@ struct ContentView: View {
                 ForEach(projects) { project in
                     NavigationLink(value: project){
                         Text(project.name)
+                    }
+                }.onDelete{ indexes in
+                    for index in indexes {
+                        Task{
+                            do {
+                                let project = projects[index]
+                                try await crud?.removeProject(project)
+                            } catch{
+                                print(error.localizedDescription)
+                            }
+                        }
                     }
                 }
             }
@@ -59,10 +71,14 @@ struct ContentView: View {
             .navigationDestination(for: Project.self) { project in
                 ProjectView(project: project)
             }
+            .onAppear {
+                crud = CRUD(modelContext: modelContext)
+            }
         }
     }
 }
 
 #Preview {
     ContentView()
+        .modelContainer(for: [Project.self, Track.self])
 }
