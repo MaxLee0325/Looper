@@ -16,7 +16,6 @@ struct ProjectView: View {
     @State private var isAlertPresented: Bool = false
     @State private var crud: CRUD?
     @State private var showTempoSheet = false
-    @State private var bpm = 120.0
     @Bindable var project: Project
     
     var body: some View {
@@ -49,7 +48,7 @@ struct ProjectView: View {
                         .padding(100)
                 }
                 .sheet(isPresented: $showTempoSheet) {
-                        TempoSheet(tempo: $bpm)
+                    TempoSheet(tempo: $project.bpm, introBeats: $project.introBeats)
                 }
             }
             
@@ -58,11 +57,11 @@ struct ProjectView: View {
                 Button(action: {
                     showTempoSheet = true
                 }){
-                    Text("\(Int(bpm)) \n BPM")
-                        .foregroundColor(.blue)
-                        .font(.system(size: 16, weight: .bold))
-                        .padding(20)
-                        .background(Color.gray.opacity(0.2)) 
+                    Text("\(Int(project.bpm)) \n BPM")
+                        .foregroundColor(.blue)              // text color
+                        .font(.system(size: 20, weight: .bold)) // text size + weight
+                        .frame(width: 100, height: 100)
+                        .background(Color.gray.opacity(0.2)) // same gray background
                         .clipShape(Circle())
                 }
                 
@@ -72,9 +71,9 @@ struct ProjectView: View {
                     Image(systemName: "trash")
                                 .foregroundColor(.red)
                                 .font(.system(size: 40, weight: .bold))
-                                .padding(8)
+                                .frame(width: 100, height: 100)
                                 .background(Color.red.opacity(0.1))
-                                .clipShape(RoundedRectangle(cornerRadius: 12))
+                                .clipShape(Circle())
                 }.alert("Are you sure you want to remove all tracks?", isPresented: $isAlertPresented, actions:{
                     Button("Cancel", role: .cancel) {
                         isAlertPresented = false
