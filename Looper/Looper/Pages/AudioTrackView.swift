@@ -48,7 +48,7 @@ struct AudioTrackView: View {
         .onChange(of: status) {
             if status == .recording {
                 recordingAnimation()
-            } else {
+            } else if status == .playing{
                 playingAnimation()
             }
         }
@@ -136,7 +136,7 @@ struct AudioTrackView: View {
     }
     
     func playingAnimation() {
-        withAnimation(.easeInOut(duration: 0.2)) {
+        withAnimation(.easeInOut(duration: 0.1)) {
             rotation = 0
         }
         withAnimation(Animation.easeInOut(duration: 0.2).repeatForever(autoreverses: true)) {

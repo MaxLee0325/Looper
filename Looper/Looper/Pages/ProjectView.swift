@@ -15,6 +15,8 @@ struct ProjectView: View {
     @State private var recordingSession: AVAudioSession = AVAudioSession.sharedInstance()
     @State private var isAlertPresented: Bool = false
     @State private var crud: CRUD?
+    @State private var showTempoSheet = false
+    @State private var bpm = 120.0
     @Bindable var project: Project
     
     var body: some View {
@@ -28,20 +30,6 @@ struct ProjectView: View {
                 .lineLimit(1)
                 .truncationMode(.tail)
             
-            if(project.tracks.count == 0){
-                Button(action: {
-                    addTrack()
-                }) {
-                    Image(systemName: "plus.rectangle.portrait")
-                        .font(.system(size: 200, weight: .bold))
-                        .foregroundStyle(.primary)                 
-                        .shadow(radius: 8)
-                        .foregroundColor(.gray.opacity(0.8))
-                        .transition(.scale.combined(with: .opacity))
-                        .padding(100)
-                }
-            }
-            
             ScrollView{
                 VStack(spacing: 20){
                     ForEach(project.tracks) {track in
@@ -49,28 +37,44 @@ struct ProjectView: View {
                     }
                     .padding()
                 }
+                Button(action: {
+                    addTrack()
+                }) {
+                    Image(systemName: "plus.rectangle.portrait")
+                        .font(.system(size: 160, weight: .bold))
+                        .foregroundStyle(.primary)
+                        .shadow(radius: 8)
+                        .foregroundColor(.gray.opacity(0.8))
+                        .transition(.scale.combined(with: .opacity))
+                        .padding(100)
+                }
+                .sheet(isPresented: $showTempoSheet) {
+                        TempoSheet(tempo: $bpm)
+                }
             }
             
             HStack{
                 
-                Button(action:{
-                    addTrack()
+                Button(action: {
+                    showTempoSheet = true
                 }){
-                    Text("Add Track")
-                        .padding()
-                        .background(Color.blue)
-                        .foregroundColor(Color.white)
-                        .cornerRadius(10)
+                    Text("\(Int(bpm)) \n BPM")
+                        .foregroundColor(.blue)
+                        .font(.system(size: 16, weight: .bold))
+                        .padding(20)
+                        .background(Color.gray.opacity(0.2)) 
+                        .clipShape(Circle())
                 }
                 
                 Button(action:{
                     isAlertPresented = true
                 }) {
-                    Text("Clear All")
-                        .padding()
-                        .background(Color.red)
-                        .foregroundColor(.white)
-                        .cornerRadius(10)
+                    Image(systemName: "trash")
+                                .foregroundColor(.red)
+                                .font(.system(size: 40, weight: .bold))
+                                .padding(8)
+                                .background(Color.red.opacity(0.1))
+                                .clipShape(RoundedRectangle(cornerRadius: 12))
                 }.alert("Are you sure you want to remove all tracks?", isPresented: $isAlertPresented, actions:{
                     Button("Cancel", role: .cancel) {
                         isAlertPresented = false
