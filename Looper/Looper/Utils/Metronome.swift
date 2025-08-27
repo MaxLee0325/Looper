@@ -9,92 +9,96 @@ import Foundation
 import AVFoundation
 
 class Metronome: ObservableObject {
+    @Published var currentBeat = 0  // for UI sync
     
     public var bpm: Double
+    public var beatsPerBar: Int
+    
     private var engine = AVAudioEngine()
     private var playerNode = AVAudioPlayerNode()
-    private var audioBuffer: AVAudioPCMBuffer?
+    private var tickBuffer: AVAudioPCMBuffer?
+    private var tockBuffer: AVAudioPCMBuffer? // accent
     private var isRunning = false
     
-    init(bpm: Double) {
+    //TODO: beats per bar can be used in future work
+    init(bpm: Double, beatsPerBar: Int = 4) {
         self.bpm = bpm
+        self.beatsPerBar = beatsPerBar
         setUpAudio()
     }
     
+    private func loadBuffer(named name: String) -> AVAudioPCMBuffer? {
+        guard let url = Bundle.main.url(forResource: name, withExtension: "wav"),
+              let file = try? AVAudioFile(forReading: url) else { return nil }
+        
+        guard let buffer = AVAudioPCMBuffer(
+            pcmFormat: file.processingFormat,
+            frameCapacity: AVAudioFrameCount(file.length)
+        ) else { return nil }
+        
+        try? file.read(into: buffer)
+        return buffer
+    }
+    
     private func setUpAudio() {
-        guard let url = Bundle.main.url(forResource: "metronome", withExtension: "wav") else {
-            print("⚠️ No metronome.wav found in bundle")
-            return
-        }
-        
-        let file: AVAudioFile
-        do {
-            file = try AVAudioFile(forReading: url)
-        } catch {
-            print("⚠️ Could not load tick sound: \(error)")
-            return
-        }
-        
-        // Convert to PCM buffer
-        guard let buffer = AVAudioPCMBuffer(pcmFormat: file.processingFormat, frameCapacity: AVAudioFrameCount(file.length)) else {
-            return
-        }
-        do {
-            try file.read(into: buffer)
-        } catch {
-            print("⚠️ Could not read file into buffer: \(error)")
-            return
-        }
-        audioBuffer = buffer
+        tickBuffer = loadBuffer(named: "metronome")
+        tockBuffer = loadBuffer(named: "metronome")
         
         engine.attach(playerNode)
-        engine.connect(playerNode, to: engine.mainMixerNode, format: buffer.format)
+        engine.connect(playerNode, to: engine.mainMixerNode, format: tickBuffer?.format)
         
         do {
             try engine.start()
         } catch {
-            print("⚠️ Audio engine failed to start: \(error)")
+            print("⚠️ Engine failed: \(error)")
         }
     }
     
-    func startMetronome(bpm: Double) {
-        guard let buffer = audioBuffer else { return }
+    func start() {
+        guard let tick = tickBuffer, let tock = tockBuffer else { return }
         
-        let interval = 60.0 / bpm
-        let sampleRate = buffer.format.sampleRate
-        let samplesPerBeat = AVAudioFramePosition(interval * sampleRate)
+        let sampleRate = tick.format.sampleRate
+        let samplesPerBeat = AVAudioFramePosition((60.0 / bpm) * sampleRate)
         
         var nextBeatTime = AVAudioTime(sampleTime: 0, atRate: sampleRate)
+        var beatInBar = 0
         
         isRunning = true
+        currentBeat = 0
+        playerNode.play()
         
-        func scheduleNextBeat() {
+        scheduleBeat()
+        
+        func scheduleBeat() {
             if !isRunning { return }
+            
+            let buffer = (beatInBar == 0) ? tock : tick // accent on beat 1
             playerNode.scheduleBuffer(buffer, at: nextBeatTime, options: []) {
+                beatInBar = (beatInBar + 1) % self.beatsPerBar
+                self.currentBeat = beatInBar + 1 // update UI (1–beatsPerBar)
+                
                 nextBeatTime = AVAudioTime(
                     sampleTime: nextBeatTime.sampleTime + samplesPerBeat,
                     atRate: sampleRate
                 )
-                scheduleNextBeat()  // recursion → infinite
+                scheduleBeat()
             }
         }
-        
-        scheduleNextBeat()
-        playerNode.play()
     }
     
-    public func stopMetronome() {
+    func stop() {
         isRunning = false
         playerNode.stop()
         playerNode.reset()
     }
     
-    public func setBPM(_ bpm: Double) {
+    func setBPM(_ bpm: Double) {
         self.bpm = bpm
-        stopMetronome()
-        startMetronome(bpm: bpm)
+        stop()
+        start()
     }
 }
+
 
 
 

@@ -15,6 +15,7 @@ class Track: Identifiable {
     var updatedAt: Date?
     var url: URL?
     var bpm: Double?
+    var introBeats: Int?
     
     init(id: UUID) {
         self.id = id
@@ -26,5 +27,9 @@ class Track: Identifiable {
     
     public func setBPM(bpm: Double){
         self.bpm = bpm
+    }
+    
+    public func setIntroBeats(_introBeats: Int){
+        self.introBeats = introBeats
     }
 }

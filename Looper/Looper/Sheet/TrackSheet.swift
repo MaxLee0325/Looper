@@ -1,31 +1,30 @@
 //
-//  TempoSheet.swift
+//  TrackSheet.swift
 //  Looper
 //
-//  Created by Max Lee on 2025-08-25.
+//  Created by Max Lee on 2025-08-26.
 //
 
 import SwiftUI
 import Foundation
 
-struct TempoSheet: View {
+struct TrackSheet: View {
+    @State var volume: Float = 0.5
     @Binding var tempo: Double
     @Environment(\.dismiss) var dismiss
     @Binding var introBeats: Double
-    
-    @State private var metronome: Metronome?
-    
+        
     var body: some View {
         VStack(spacing: 20) {
-            Text("Set Tempo")
+            Text("Set Volume")
                 .font(.headline)
             
-            Slider(value: $tempo, in: 40...240, step: 1) {
-                Text("Tempo")
+            Slider(value: $volume, in: 0...100, step: 1) {
+                Text("Volume")
             }
             .padding()
             
-            Text("\(Int(tempo)) BPM")
+            Text("Volume: \(Int(volume))")
                 .font(.title2)
                 .foregroundColor(.blue)
             .padding()
@@ -40,28 +39,23 @@ struct TempoSheet: View {
                 .foregroundColor(.blue)
             .padding()
             
-            Button("Done") {
-                metronome?.stop()
+            HStack(spacing: 10){
+                Button("Back") {
+                    dismiss()
+                }
+                .padding()
                 
-                dismiss()
+                Button("Start"){
+                }
             }
-            .padding()
         }
-        .padding()
         .onAppear() {
-            metronome = Metronome(bpm: tempo)
-            metronome?.start()
-        }
-        .onChange(of: tempo) { newValue in
-            metronome?.stop()
-            metronome?.setBPM(newValue)
         }
         .onDisappear {
-            metronome?.stop()
         }
     }
     
-
+    func StartRecording(){
+        dismiss()
+    }
 }
-
-
