@@ -12,13 +12,16 @@ public class Recorder: ObservableObject  {
     
     private var audioRecorder: AVAudioRecorder?
     private var recordingURL: URL?
-    private var audioPlayer: AVAudioPlayer?
+    public var audioPlayer: AVAudioPlayer?
     @Environment(\.scenePhase) private var scenePhase
     let recordingSession: AVAudioSession
     
-    init(recordingURL: URL, recordingSession: AVAudioSession) {
-        self.recordingURL = recordingURL
+    init(_ recordingSession: AVAudioSession) {
         self.recordingSession = recordingSession
+    }
+    
+    public func getURL() -> URL{
+        return recordingURL ?? FileManager.default.temporaryDirectory.appendingPathComponent("empty.m4a")
     }
     
     public func startRecording() {

@@ -10,9 +10,7 @@ import Foundation
 
 struct TrackSheet: View {
     @State var volume: Float = 0.5
-    @Binding var tempo: Double
     @Environment(\.dismiss) var dismiss
-    @Binding var introBeats: Double
         
     var body: some View {
         VStack(spacing: 20) {
@@ -30,22 +28,13 @@ struct TrackSheet: View {
             .padding()
 
             
-            Slider(value: $introBeats, in: 1...30, step: 1) {
-                Text("Intro Beats")
-            }
-            
-            Text("Start Recording After: \(Int(introBeats)) Beats")
-                .font(.title2)
-                .foregroundColor(.blue)
-            .padding()
-            
             HStack(spacing: 10){
-                Button("Back") {
+                Button("Cancel") {
                     dismiss()
                 }
                 .padding()
                 
-                Button("Start"){
+                Button("Done"){
                 }
             }
         }
@@ -55,7 +44,4 @@ struct TrackSheet: View {
         }
     }
     
-    func StartRecording(){
-        dismiss()
-    }
 }

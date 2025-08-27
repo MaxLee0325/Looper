@@ -19,12 +19,12 @@ struct AudioTrackView: View {
     @State private var status: TrackStatus = .idle
     @State private var rotation = 0.0
     @State private var scale = 1.0
-    @State private var audioRecorder: AVAudioRecorder?
     @State private var recordingURL: URL?
-    @State private var audioPlayer: AVAudioPlayer?
+    @State private var showTrackSheet: Bool = false
     @Environment(\.scenePhase) private var scenePhase
     let recordingSession: AVAudioSession
-    
+    @State private var recorder: Recorder?
+
     var body: some View {
         VStack {
             Button(action: {
@@ -32,7 +32,7 @@ struct AudioTrackView: View {
                     //TODO
                 } else if status == .recording {
                     stopRecording()
-                } else {
+                } else if status == .idle {
                     startRecording()
                 }
             }) {
@@ -60,12 +60,14 @@ struct AudioTrackView: View {
                         try? FileManager.default.removeItem(at: url)
                     }
                 }
-                audioPlayer?.stop()
+                recorder?.audioPlayer?.stop()
             }
         }
         .onAppear(){
+            recorder = Recorder(recordingSession)
+            
             if let url = track.url {
-                playAudio(from: url)
+                recorder?.playAudio(from: url)
                 status = .playing
             }
         }
@@ -76,55 +78,22 @@ struct AudioTrackView: View {
                     try? FileManager.default.removeItem(at: url)
                 }
             }
-            audioPlayer?.stop()
+            recorder?.audioPlayer?.stop()
         }
-
     }
     
     func startRecording() {
-        let audioFileName = getDocumentsDirectory().appendingPathComponent("recording_\(Date().timeIntervalSince1970).m4a")
-        recordingURL = audioFileName
-        
-        let settings: [String: Any] = [
-            AVFormatIDKey: Int(kAudioFormatMPEG4AAC),
-            AVSampleRateKey: 12000,
-            AVNumberOfChannelsKey: 1,
-            AVEncoderAudioQualityKey: Int(AVAudioQuality.high.rawValue)
-        ]
-        
-        do {
-            audioRecorder = try AVAudioRecorder(url: audioFileName, settings: settings)
-            audioRecorder?.record()
-            status = .recording
-            track.setURL(url: audioFileName)
-        } catch {
-            print("Fail to start recording: \(error.localizedDescription)")
-            status = .idle
-        }
+        recorder?.startRecording()
+        status = .recording
+        track.url = recorder?.getURL()
     }
     
     func stopRecording() {
-        audioRecorder?.stop()
-        audioRecorder = nil
+        recorder?.stopRecording()
         status = .playing
         
         if let url = recordingURL {
-            playAudio(from: url)
-        }
-    }
-    
-    func getDocumentsDirectory() -> URL {
-        FileManager.default.urls(for: .documentDirectory, in: .userDomainMask)[0]
-    }
-    
-    func playAudio(from url: URL){
-        do{
-            audioPlayer = try AVAudioPlayer(contentsOf: url)
-            audioPlayer?.numberOfLoops = -1
-            audioPlayer?.prepareToPlay()
-            audioPlayer?.play()
-        } catch{
-            print("Fail to play audio: \(error.localizedDescription)")
+            recorder?.playAudio(from: url)
         }
     }
     
