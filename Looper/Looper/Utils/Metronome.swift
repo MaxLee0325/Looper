@@ -18,10 +18,10 @@ class Metronome: ObservableObject {
     private var playerNode = AVAudioPlayerNode()
     private var tickBuffer: AVAudioPCMBuffer?
     private var tockBuffer: AVAudioPCMBuffer? // accent
-    private var isRunning = false
+    public var isRunning = false
     
     //TODO: beats per bar can be used in future work
-    init(bpm: Double, beatsPerBar: Int = 4) {
+    init(_ bpm: Double, beatsPerBar: Int = 4) {
         self.bpm = bpm
         self.beatsPerBar = beatsPerBar
         setUpAudio()
@@ -74,9 +74,17 @@ class Metronome: ObservableObject {
             
             let buffer = (beatInBar == 0) ? tock : tick // accent on beat 1
             playerNode.scheduleBuffer(buffer, at: nextBeatTime, options: []) {
-                beatInBar = (beatInBar + 1) % self.beatsPerBar
-                self.currentBeat = beatInBar + 1 // update UI (1–beatsPerBar)
-                
+                //this can be used for more powerful beat patterns, in the future maybe
+//                beatInBar = (beatInBar + 1) % self.beatsPerBar
+//                
+//                DispatchQueue.main.async {
+//                    self.currentBeat = beatInBar + 1 // update UI (1–beatsPerBar)
+//                }
+                                
+                DispatchQueue.main.async {
+                    self.currentBeat += 1 // update UI (1–beatsPerBar)
+                }
+
                 nextBeatTime = AVAudioTime(
                     sampleTime: nextBeatTime.sampleTime + samplesPerBeat,
                     atRate: sampleRate
@@ -90,6 +98,11 @@ class Metronome: ObservableObject {
         isRunning = false
         playerNode.stop()
         playerNode.reset()
+        currentBeat = 0
+    }
+    
+    func mute() {
+        playerNode.volume = 0.0
     }
     
     func setBPM(_ bpm: Double) {

@@ -42,21 +42,21 @@ struct TempoSheet: View {
             
             Button("Done") {
                 metronome?.stop()
-                
                 dismiss()
             }
             .padding()
         }
         .padding()
         .onAppear() {
-            metronome = Metronome(bpm: tempo)
+            metronome = Metronome(tempo)
             metronome?.start()
         }
-        .onChange(of: tempo) { newValue in
+        .onChange(of: tempo) {
             metronome?.stop()
-            metronome?.setBPM(newValue)
+            metronome?.setBPM(tempo)
         }
         .onDisappear {
+            metronome?.isRunning = false
             metronome?.stop()
         }
     }

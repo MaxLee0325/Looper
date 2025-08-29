@@ -95,13 +95,23 @@ struct ProjectView: View {
         .onAppear(){
             crud = CRUD(modelContext: modelContext)
         }
+        .onChange(of: project.introBeats){
+            for track in project.tracks {
+                track.setIntroBeats(Int(project.introBeats))
+            }
+        }
+        .onChange(of: project.bpm){
+            for track in project.tracks {
+                track.setBPM(project.bpm)
+            }
+        }
         
     }
     
     func addTrack(){
-        let url = getDocumentsDirectory().appendingPathComponent("recording_\(Date().timeIntervalSince1970).m4a")
         let newTrack = Track(id: UUID())
-        
+        newTrack.setBPM(project.bpm)
+        newTrack.setIntroBeats(Int(project.introBeats))
         project.tracks.append(newTrack)
     }
     
@@ -129,10 +139,7 @@ struct ProjectView: View {
             print("Failed to set up audio session: \(error.localizedDescription)")
         }
     }
-    
-    func getDocumentsDirectory() -> URL {
-        FileManager.default.urls(for: .documentDirectory, in: .userDomainMask)[0]
-    }
+
 }
 
 #Preview {

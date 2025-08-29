@@ -7,6 +7,7 @@
 import SwiftUI
 import AVFoundation
 import SwiftData
+import SDWebImageSwiftUI
 
 enum TrackStatus: Int {
     case idle = 0
@@ -21,29 +22,42 @@ struct AudioTrackView: View {
     @State private var scale = 1.0
     @State private var recordingURL: URL?
     @State private var showTrackSheet: Bool = false
+    @State private var showAudioSheet: Bool = false
     @Environment(\.scenePhase) private var scenePhase
     let recordingSession: AVAudioSession
     @State private var recorder: Recorder?
+    @State private var metronome: Metronome
+    @State private var icon: String = "mic"
+
+    init(track: Track, recordingSession: AVAudioSession) {
+        self.track = track
+        self.recordingSession = recordingSession
+        _metronome = State(initialValue: Metronome(track.bpm))
+    }
+
 
     var body: some View {
         VStack {
             Button(action: {
                 if status == .playing {
-                    //TODO
+                    showAudioSheet = true
                 } else if status == .recording {
                     stopRecording()
                 } else if status == .idle {
                     startRecording()
                 }
             }) {
-                Image("idle")
+                AnimatedImage(name: icon)
                     .resizable()
-                    .scaledToFit()
+                    .aspectRatio(contentMode: .fill)
                     .frame(width: 200, height: 200)
+                    .clipped()
                     .opacity(1.0)
-                    .rotationEffect(.degrees(status == .recording ? rotation : 0))
-                    .scaleEffect(scale)
             }
+        }
+        .sheet(isPresented: $showTrackSheet) {
+
+
         }
         .onChange(of: status) {
             if status == .recording {
@@ -65,7 +79,7 @@ struct AudioTrackView: View {
         }
         .onAppear(){
             recorder = Recorder(recordingSession)
-            
+            metronome = Metronome(track.bpm)
             if let url = track.url {
                 recorder?.playAudio(from: url)
                 status = .playing
@@ -78,14 +92,24 @@ struct AudioTrackView: View {
                     try? FileManager.default.removeItem(at: url)
                 }
             }
-            recorder?.audioPlayer?.stop()
+            metronome.stop()
         }
+        .onReceive(metronome.$currentBeat) { beat in
+            if beat == track.introBeats - 1{
+                metronome.mute()
+            }
+            
+            if beat == track.introBeats + 1{
+                recorder?.startRecording()
+                status = .recording
+                track.url = recorder?.getURL()
+            }
+        }
+
     }
     
     func startRecording() {
-        recorder?.startRecording()
-        status = .recording
-        track.url = recorder?.getURL()
+        metronome.start()
     }
     
     func stopRecording() {
@@ -98,19 +122,11 @@ struct AudioTrackView: View {
     }
     
     func recordingAnimation() {
-        withAnimation(Animation.linear(duration: 2).repeatForever(autoreverses: false)) {
-            rotation = 360
-        }
-        scale = 1.0
+        icon = "Mic Animation.gif"
     }
     
     func playingAnimation() {
-        withAnimation(.easeInOut(duration: 0.1)) {
-            rotation = 0
-        }
-        withAnimation(Animation.easeInOut(duration: 0.2).repeatForever(autoreverses: true)) {
-            scale = 1.1
-        }
+        icon = "Play dvd, disk.gif"
     }
 }
 
