@@ -12,12 +12,14 @@ public class Recorder: ObservableObject  {
     
     private var audioRecorder: AVAudioRecorder?
     private var recordingURL: URL?
+    private var audioFileName: URL!
     public var audioPlayer: AVAudioPlayer?
     @Environment(\.scenePhase) private var scenePhase
     let recordingSession: AVAudioSession
     
     init(_ recordingSession: AVAudioSession) {
         self.recordingSession = recordingSession
+        setUpRecorder()
     }
     
     public func getURL() -> URL{
@@ -25,7 +27,11 @@ public class Recorder: ObservableObject  {
     }
     
     public func startRecording() {
-        let audioFileName = getDocumentsDirectory().appendingPathComponent("recording_\(Date().timeIntervalSince1970).m4a")
+        audioRecorder?.record()
+    }
+    
+    private func setUpRecorder(){
+        audioFileName = getDocumentsDirectory().appendingPathComponent("recording_\(Date().timeIntervalSince1970).m4a")
         recordingURL = audioFileName
         
         let settings: [String: Any] = [
@@ -37,10 +43,10 @@ public class Recorder: ObservableObject  {
         
         do {
             audioRecorder = try AVAudioRecorder(url: audioFileName, settings: settings)
-            audioRecorder?.record()
         } catch {
-            print("Fail to start recording: \(error.localizedDescription)")
+            print("Fail to set up recorder: \(error.localizedDescription)")
         }
+        
     }
     
     public func stopRecording() {
@@ -65,6 +71,10 @@ public class Recorder: ObservableObject  {
         } catch{
             print("Fail to play audio: \(error.localizedDescription)")
         }
+    }
+    
+    public func stopPlaying(){
+        audioPlayer?.stop()
     }
     
 }

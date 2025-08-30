@@ -8,6 +8,7 @@
 
 /* Begin PBXBuildFile section */
 		9D5F2E732E612DD70013BE46 /* SDWebImageSwiftUI in Frameworks */ = {isa = PBXBuildFile; productRef = 9D5F2E722E612DD70013BE46 /* SDWebImageSwiftUI */; };
+		9D5F2E832E613F920013BE46 /* FDWaveformView in Frameworks */ = {isa = PBXBuildFile; productRef = 9D5F2E822E613F920013BE46 /* FDWaveformView */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -56,6 +57,7 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				9D5F2E832E613F920013BE46 /* FDWaveformView in Frameworks */,
 				9D5F2E732E612DD70013BE46 /* SDWebImageSwiftUI in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -118,6 +120,7 @@
 			name = Looper;
 			packageProductDependencies = (
 				9D5F2E722E612DD70013BE46 /* SDWebImageSwiftUI */,
+				9D5F2E822E613F920013BE46 /* FDWaveformView */,
 			);
 			productName = Looper;
 			productReference = 9DBC44972E5A280B00103FF1 /* Looper.app */;
@@ -203,6 +206,7 @@
 			minimizedProjectReferenceProxies = 1;
 			packageReferences = (
 				9D5F2E712E612DD60013BE46 /* XCRemoteSwiftPackageReference "SDWebImageSwiftUI" */,
+				9D5F2E812E613F920013BE46 /* XCRemoteSwiftPackageReference "FDWaveformView" */,
 			);
 			preferredProjectObjectVersion = 77;
 			productRefGroup = 9DBC44982E5A280B00103FF1 /* Products */;
@@ -575,6 +579,14 @@
 				minimumVersion = 3.1.3;
 			};
 		};
+		9D5F2E812E613F920013BE46 /* XCRemoteSwiftPackageReference "FDWaveformView" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "https://github.com/fulldecent/FDWaveformView";
+			requirement = {
+				kind = upToNextMajorVersion;
+				minimumVersion = 5.0.2;
+			};
+		};
 /* End XCRemoteSwiftPackageReference section */
 
 /* Begin XCSwiftPackageProductDependency section */
@@ -582,6 +594,11 @@
 			isa = XCSwiftPackageProductDependency;
 			package = 9D5F2E712E612DD60013BE46 /* XCRemoteSwiftPackageReference "SDWebImageSwiftUI" */;
 			productName = SDWebImageSwiftUI;
+		};
+		9D5F2E822E613F920013BE46 /* FDWaveformView */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = 9D5F2E812E613F920013BE46 /* XCRemoteSwiftPackageReference "FDWaveformView" */;
+			productName = FDWaveformView;
 		};
 /* End XCSwiftPackageProductDependency section */
 	};

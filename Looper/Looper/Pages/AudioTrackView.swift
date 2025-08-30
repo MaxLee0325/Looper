@@ -22,7 +22,6 @@ struct AudioTrackView: View {
     @State private var scale = 1.0
     @State private var recordingURL: URL?
     @State private var showTrackSheet: Bool = false
-    @State private var showAudioSheet: Bool = false
     @Environment(\.scenePhase) private var scenePhase
     let recordingSession: AVAudioSession
     @State private var recorder: Recorder?
@@ -40,7 +39,7 @@ struct AudioTrackView: View {
         VStack {
             Button(action: {
                 if status == .playing {
-                    showAudioSheet = true
+                    showTrackSheet = true
                 } else if status == .recording {
                     stopRecording()
                 } else if status == .idle {
@@ -54,11 +53,11 @@ struct AudioTrackView: View {
                     .clipped()
                     .opacity(1.0)
             }
+            .sheet(isPresented: $showTrackSheet) {
+                TrackSheet(trackURL: $track.url, bpm: $track.bpm)
+            }
         }
-        .sheet(isPresented: $showTrackSheet) {
 
-
-        }
         .onChange(of: status) {
             if status == .recording {
                 recordingAnimation()
@@ -75,6 +74,16 @@ struct AudioTrackView: View {
                     }
                 }
                 recorder?.audioPlayer?.stop()
+            }
+        }
+        .onChange(of: showTrackSheet){
+            if showTrackSheet{
+                recorder?.stopPlaying()
+            } else {
+                if let url = track.url {
+                    recorder?.playAudio(from: url)
+                    status = .playing
+                }
             }
         }
         .onAppear(){
