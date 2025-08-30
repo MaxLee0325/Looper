@@ -11,22 +11,9 @@ public class AudioTrimmer: ObservableObject {
     
     private var audioAsset: AVAsset?
     private var player: AVAudioPlayer?
-    private var duration: TimeInterval = 0
-    
-    
-    
-    
-    
-    // MARK: - Load Audio
-    private func loadAudio(_ trackURL: URL?) {
-        guard let url = trackURL else { return }
-        audioAsset = AVAsset(url: url)
-        duration = audioAsset?.duration.seconds ?? 0
-        //endTime = duration
-    }
     
     // MARK: - Play Trimmed
-    private func playTrimmedAudio(_ trackURL: URL?, _ startTime: Double, _ endTime: Double) {
+    public func playTrimmedAudio(_ trackURL: URL?, _ startTime: Double, _ endTime: Double) {
         
         let exporter = setUpExporter(trackURL)
         
@@ -55,7 +42,7 @@ public class AudioTrimmer: ObservableObject {
     }
     
     // MARK: - Save Trimmed
-    private func exportTrimmedAudio(_ trackURL: URL?, _ startTime: Double, _ endTime: Double) -> URL{
+    public func exportTrimmedAudio(_ trackURL: URL?, _ startTime: Double, _ endTime: Double) -> URL{
         
         let exporter = setUpExporter(trackURL)
         

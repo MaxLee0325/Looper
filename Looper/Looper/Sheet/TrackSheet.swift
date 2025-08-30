@@ -54,10 +54,10 @@ struct TrackSheet: View {
                     if playing {
                         player?.stop()
                     }
-                        playTrimmedAudio()
+                    audioTrimmer?.playTrimmedAudio(trackURL, startTime, endTime)
                 }
                 Button("Save Trimmed") {
-                    exportTrimmedAudio()
+                    trackURL = audioTrimmer?.exportTrimmedAudio(trackURL, startTime, endTime)
                 }
             }
             
@@ -74,71 +74,11 @@ struct TrackSheet: View {
         }
     }
     
-    // MARK: - Load Audio
     private func loadAudio() {
         guard let url = trackURL else { return }
         audioAsset = AVAsset(url: url)
         duration = audioAsset?.duration.seconds ?? 0
         endTime = duration
     }
-    
-    // MARK: - Play Trimmed
-    public func playTrimmedAudio() {
-        guard let url = trackURL else { return }
-        
-        let asset = AVAsset(url: url)
-        let exporter = AVAssetExportSession(asset: asset, presetName: AVAssetExportPresetAppleM4A)!
-        
-        let tempURL = URL(fileURLWithPath: NSTemporaryDirectory()).appendingPathComponent("trimmed.m4a")
-        try? FileManager.default.removeItem(at: tempURL)
-        
-        exporter.outputURL = tempURL
-        exporter.outputFileType = .m4a
-        let startCM = CMTime(seconds: startTime, preferredTimescale: 600)
-        let endCM = CMTime(seconds: endTime, preferredTimescale: 600)
-        exporter.timeRange = CMTimeRange(start: startCM, end: endCM)
-        
-        exporter.exportAsynchronously {
-            if exporter.status == .completed {
-                DispatchQueue.main.async {
-                    do {
-                        player = try AVAudioPlayer(contentsOf: tempURL)
-                        player?.numberOfLoops = -1
-                        player?.play()
-                        playing = true
-                    } catch {
-                        print("Playback failed: \(error)")
-                    }
-                }
-            }
-        }
-    }
-    
-    // MARK: - Save Trimmed
-    public func exportTrimmedAudio() {
-        guard let url = trackURL else { return }
-        
-        let asset = AVAsset(url: url)
-        guard let exporter = AVAssetExportSession(asset: asset, presetName: AVAssetExportPresetAppleM4A) else { return }
-        
-        let outputURL = url.deletingPathExtension().appendingPathExtension("trimmed.m4a")
-        try? FileManager.default.removeItem(at: outputURL)
-        
-        let startCM = CMTime(seconds: startTime, preferredTimescale: 600)
-        let endCM = CMTime(seconds: endTime, preferredTimescale: 600)
-        exporter.timeRange = CMTimeRange(start: startCM, end: endCM)
-        exporter.outputURL = outputURL
-        exporter.outputFileType = .m4a
-        
-        exporter.exportAsynchronously {
-            if exporter.status == .completed {
-                DispatchQueue.main.async {
-                    print("Saved trimmed audio to \(outputURL)")
-                    trackURL = outputURL // replace old file with new trimmed one
-                }
-            } else {
-                print("Export failed: \(exporter.error?.localizedDescription ?? "Unknown error")")
-            }
-        }
-    }
+
 }
