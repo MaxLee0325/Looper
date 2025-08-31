@@ -13,6 +13,7 @@ enum TrackStatus: Int {
     case idle = 0
     case recording = 1
     case playing = 2
+    case stop = 3
 }
 
 struct AudioTrackView: View {
@@ -20,13 +21,13 @@ struct AudioTrackView: View {
     @State private var status: TrackStatus = .idle
     @State private var rotation = 0.0
     @State private var scale = 1.0
-    @State private var recordingURL: URL?
     @State private var showTrackSheet: Bool = false
     @Environment(\.scenePhase) private var scenePhase
     let recordingSession: AVAudioSession
     @State private var recorder: Recorder?
     @State private var metronome: Metronome
     @State private var icon: String = "mic"
+    @State private var recorded = false
 
     init(track: Track, recordingSession: AVAudioSession) {
         self.track = track
@@ -38,7 +39,7 @@ struct AudioTrackView: View {
     var body: some View {
         VStack {
             Button(action: {
-                if status == .playing {
+                if recorded {
                     showTrackSheet = true
                 } else if status == .recording {
                     stopRecording()
@@ -69,7 +70,7 @@ struct AudioTrackView: View {
             if scenePhase == .background || scenePhase == .inactive {
                 if status == .recording {
                     stopRecording()
-                    if let url = recordingURL {
+                    if let url = track.url {
                         try? FileManager.default.removeItem(at: url)
                     }
                 }
@@ -86,6 +87,9 @@ struct AudioTrackView: View {
                 }
             }
         }
+        .onChange(of: track.playing){
+            track.playing ? playRecording(): stopPlaying()
+        }
         .onAppear(){
             recorder = Recorder(recordingSession)
             metronome = Metronome(track.bpm)
@@ -97,7 +101,7 @@ struct AudioTrackView: View {
         .onDisappear {
             if status == .recording{
                 stopRecording()
-                if let url = recordingURL {
+                if let url = track.url {
                     try? FileManager.default.removeItem(at: url)
                 }
             }
@@ -123,10 +127,21 @@ struct AudioTrackView: View {
     
     func stopRecording() {
         recorder?.stopRecording()
-        status = .playing
-        
-        if let url = recordingURL {
+        recorded = true
+        playRecording()
+        track.playing = true
+    }
+    
+    func stopPlaying(){
+        recorder?.stopPlaying()
+        status = .stop
+        icon = "Play dvd, disk_freeze"
+    }
+    
+    func playRecording(){
+        if let url = track.url {
             recorder?.playAudio(from: url)
+            status = .playing
         }
     }
     

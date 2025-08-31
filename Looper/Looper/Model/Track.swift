@@ -10,14 +10,18 @@ import SwiftData
 
 @Model
 class Track: Identifiable {
+    
     @Attribute(.unique) var id: UUID
     var createdAt: Date?
     var updatedAt: Date?
     var url: URL?
     var bpm: Double = 120.0
     var introBeats = 4
+    public var recorded: Bool = false
+    public var playing: Bool = false
+    public var recording: Bool = false
     
-    init(id: UUID) {
+    init(id: UUID = UUID()) {
         self.id = id
     }
     
@@ -36,4 +40,5 @@ class Track: Identifiable {
     public func setBPM(_ bpm: Double){
         self.bpm = bpm
     }
+
 }

@@ -53,6 +53,17 @@ struct ProjectView: View {
             }
             
             HStack{
+        
+                Button(action: {
+                    togglePlay()
+                }) {
+                    Image(systemName: "playpause")
+                        .foregroundColor(.blue)
+                        .font(.system(size: 40, weight: .bold))
+                        .frame(width: 100, height: 100)
+                        .background(Color.red.opacity(0.1))
+                        .clipShape(Circle())
+                }
                 
                 Button(action: {
                     showTempoSheet = true
@@ -107,6 +118,26 @@ struct ProjectView: View {
         }
         
     }
+    
+    func togglePlay(){
+        if !project.tracks.isEmpty {
+            project.tracks[0].playing ? stopPlaying() : playRecordings()
+        }
+    }
+    
+    func stopPlaying(){
+        for track in project.tracks {
+            track.playing = false
+        }
+    }
+    
+    func playRecordings(){
+        for track in project.tracks {
+            track.playing = true
+        }
+    }
+    
+    
     
     func addTrack(){
         let newTrack = Track(id: UUID())
