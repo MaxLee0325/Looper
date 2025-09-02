@@ -43,6 +43,8 @@ struct TrackSheet: View {
                         
                         Text("Start: \(String(format: "%.2f", startTime))s | End: \(String(format: "%.2f", endTime))s")
                             .font(.caption)
+                        Text("Length after trimming: \(String(format: "%.2f", (endTime - startTime)))s")
+                            .font(.caption)
                     }
                     .padding(.horizontal)
                 }
