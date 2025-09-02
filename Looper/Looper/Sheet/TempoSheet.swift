@@ -30,8 +30,7 @@ struct TempoSheet: View {
                 .foregroundColor(.blue)
             .padding()
 
-            
-            Slider(value: $introBeats, in: 1...30, step: 1) {
+            Slider(value: $introBeats, in: 0...30, step: 1) {
                 Text("Intro Beats")
             }
             

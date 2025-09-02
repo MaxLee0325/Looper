@@ -108,11 +108,12 @@ struct AudioTrackView: View {
             metronome.stop()
         }
         .onReceive(metronome.$currentBeat) { beat in
-            if beat == track.introBeats - 1{
+            if(beat == track.introBeats){
                 metronome.mute()
             }
             
-            if beat == track.introBeats + 1{
+            if beat == track.introBeats + 2{
+                metronome.stop()
                 recorder?.startRecording()
                 status = .recording
                 track.url = recorder?.getURL()
@@ -122,7 +123,13 @@ struct AudioTrackView: View {
     }
     
     func startRecording() {
-        metronome.start()
+        if(track.introBeats == 0) {
+            recorder?.startRecording()
+            status = .recording
+            track.url = recorder?.getURL()
+        } else {
+            metronome.start()
+        }
     }
     
     func stopRecording() {

@@ -72,6 +72,10 @@ class Metronome: ObservableObject {
         func scheduleBeat() {
             if !isRunning { return }
             
+            DispatchQueue.main.async {
+                self.currentBeat += 1 // update UI (1–beatsPerBar)
+            }
+            
             let buffer = (beatInBar == 0) ? tock : tick // accent on beat 1
             playerNode.scheduleBuffer(buffer, at: nextBeatTime, options: []) {
                 //this can be used for more powerful beat patterns, in the future maybe
@@ -81,10 +85,6 @@ class Metronome: ObservableObject {
 //                    self.currentBeat = beatInBar + 1 // update UI (1–beatsPerBar)
 //                }
                                 
-                DispatchQueue.main.async {
-                    self.currentBeat += 1 // update UI (1–beatsPerBar)
-                }
-
                 nextBeatTime = AVAudioTime(
                     sampleTime: nextBeatTime.sampleTime + samplesPerBeat,
                     atRate: sampleRate
