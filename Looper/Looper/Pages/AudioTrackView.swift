@@ -27,7 +27,6 @@ struct AudioTrackView: View {
     @State private var recorder: Recorder?
     @State private var metronome: Metronome
     @State private var icon: String = "mic"
-    @State private var recorded = false
 
     init(track: Track, recordingSession: AVAudioSession) {
         self.track = track
@@ -39,7 +38,8 @@ struct AudioTrackView: View {
     var body: some View {
         VStack {
             Button(action: {
-                if recorded {
+                print("Recorded: \(track.recorded)", status)
+                if track.recorded {
                     showTrackSheet = true
                 } else if status == .recording {
                     stopRecording()
@@ -90,6 +90,9 @@ struct AudioTrackView: View {
         .onChange(of: track.playing){
             track.playing ? playRecording(): stopPlaying()
         }
+        .onChange(of: track.bpm){
+            metronome.bpm = track.bpm
+        }
         .onAppear(){
             recorder = Recorder(recordingSession)
             metronome = Metronome(track.bpm)
@@ -123,7 +126,7 @@ struct AudioTrackView: View {
     }
     
     func startRecording() {
-        if(track.introBeats == 0) {
+        if(track.introBeats == 0 || track.number != 1) {
             recorder?.startRecording()
             status = .recording
             track.url = recorder?.getURL()
@@ -134,7 +137,7 @@ struct AudioTrackView: View {
     
     func stopRecording() {
         recorder?.stopRecording()
-        recorded = true
+        track.recorded = true
         playRecording()
         track.playing = true
     }

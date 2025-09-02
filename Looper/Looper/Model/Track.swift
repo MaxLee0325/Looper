@@ -20,6 +20,7 @@ class Track: Identifiable {
     public var recorded: Bool = false
     public var playing: Bool = false
     public var recording: Bool = false
+    public var number: Int?
     
     init(id: UUID = UUID()) {
         self.id = id
@@ -39,6 +40,10 @@ class Track: Identifiable {
     
     public func setBPM(_ bpm: Double){
         self.bpm = bpm
+    }
+    
+    public func setNumber(_ number: Int){
+        self.number = number
     }
 
 }

@@ -137,12 +137,16 @@ struct ProjectView: View {
         }
     }
     
+    func findNumberOfTrack() -> Int {
+        return project.tracks.count
+    }
     
     
     func addTrack(){
         let newTrack = Track(id: UUID())
         newTrack.setBPM(project.bpm)
         newTrack.setIntroBeats(Int(project.introBeats))
+        newTrack.setNumber(findNumberOfTrack() + 1)
         project.tracks.append(newTrack)
     }
     
